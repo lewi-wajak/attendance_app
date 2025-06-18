@@ -57,20 +57,19 @@
 
 <!-- JavaScript to handle location + form submission -->
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Trigger location permission early
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          console.log("Location permission granted.");
-        },
-        function (error) {
-          console.warn("Location permission denied or not yet granted.");
-        }
-      );
-    }
+  // Trigger geolocation permission ASAP, before user clicks
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function () {
+        console.log("Location permission granted early.");
+      },
+      function () {
+        console.warn("Location permission denied.");
+      }
+    );
+  }
 
-    // Reusable location + form submit function
+  document.addEventListener("DOMContentLoaded", function () {
     function sendLocationAndSubmit(formId, inputId, attendanceId = null) {
       const input = document.getElementById(inputId);
       if (!input) return alert("Hidden field missing!");
@@ -94,7 +93,6 @@
       }
     }
 
-    // Check In button click
     const checkInBtn = document.getElementById("check-in-btn");
     if (checkInBtn) {
       checkInBtn.addEventListener("click", function () {
@@ -102,7 +100,6 @@
       });
     }
 
-    // Check Out button click
     const checkOutBtn = document.getElementById("check-out-btn");
     if (checkOutBtn) {
       checkOutBtn.addEventListener("click", function () {
