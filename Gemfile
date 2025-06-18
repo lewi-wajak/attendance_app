@@ -29,6 +29,8 @@ group :production do
   gem 'pg'
 end
 
+gem 'geocoder'
+
 
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"

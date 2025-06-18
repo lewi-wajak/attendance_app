@@ -9,13 +9,23 @@ class AttendancesController < ApplicationController
   end
   
 def check_in
-  current_user.attendances.create!(check_in: Time.zone.now, location: params[:location])
+  attendance = current_user.attendances.new(
+    check_in: Time.zone.now,
+    latitude: params[:latitude],
+    longitude: params[:longitude]
+  )
+  attendance.reverse_geocode
+  attendance.save!
   redirect_to attendances_path, notice: "You have checked in."
 end
 
 def check_out
   attendance = current_user.attendances.find(params[:id])
-  attendance.update!(check_out: Time.zone.now, location: params[:location])
+  attendance.latitude = params[:latitude]
+  attendance.longitude = params[:longitude]
+  attendance.check_out = Time.zone.now
+  attendance.reverse_geocode
+  attendance.save!
   redirect_to attendances_path, notice: "You have checked out."
 end
 

@@ -14,7 +14,8 @@
 
     <!-- Hidden Check-In Form -->
     <%= form_with url: check_in_attendances_path, method: :post, id: "check-in-form", style: "display: none;" do %>
-      <%= hidden_field_tag :location, "", id: "check-in-location" %>
+      <%= hidden_field_tag :latitude, "", id: "check-in-latitude" %>
+      <%= hidden_field_tag :longitude, "", id: "check-in-longitude" %>
     <% end %>
 
   <% elsif @today_attendance.check_out.nil? %>
@@ -23,7 +24,8 @@
 
     <!-- Hidden Check-Out Form -->
     <%= form_with url: check_out_attendances_path, method: :patch, id: "check-out-form", style: "display: none;" do %>
-      <%= hidden_field_tag :location, "", id: "check-out-location" %>
+      <%= hidden_field_tag :latitude, "", id: "check-out-latitude" %>
+      <%= hidden_field_tag :longitude, "", id: "check-out-longitude" %>
       <%= hidden_field_tag :id, "", id: "hidden-checkout-id" %>
     <% end %>
 
@@ -49,7 +51,7 @@
         <td><%= a.created_at.strftime("%B %d, %Y") %></td>
         <td><%= a.check_in&.strftime("%I:%M %p") %></td>
         <td><%= a.check_out&.strftime("%I:%M %p") || "Not yet" %></td>
-        <td><%= a.location %></td>
+        <td><%= a.location || "Coords: #{a.latitude}, #{a.longitude}" %></td>
       </tr>
     <% end %>
   </tbody>
@@ -60,22 +62,19 @@
   function initializeLocationScript() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        function (position) {
-          console.log("Location permission granted.");
-        },
-        function (error) {
-          console.warn("Location permission denied or not yet granted.");
-        }
+        () => console.log("Location permission granted."),
+        () => console.warn("Location permission denied or not yet granted.")
       );
     }
 
-    function sendLocationAndSubmit(formId, inputId, attendanceId = null) {
-      const input = document.getElementById(inputId);
-      if (!input) return alert("Hidden field missing!");
+    function sendCoordinates(formId, latId, lngId, attendanceId = null) {
+      const latField = document.getElementById(latId);
+      const lngField = document.getElementById(lngId);
+      if (!latField || !lngField) return alert("Hidden fields missing!");
 
       navigator.geolocation.getCurrentPosition(function(position) {
-        const coords = `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`;
-        input.value = coords;
+        latField.value = position.coords.latitude;
+        lngField.value = position.coords.longitude;
 
         if (attendanceId) {
           const idField = document.getElementById("hidden-checkout-id");
@@ -91,7 +90,7 @@
     const checkInBtn = document.getElementById("check-in-btn");
     if (checkInBtn) {
       checkInBtn.addEventListener("click", function () {
-        sendLocationAndSubmit("check-in-form", "check-in-location");
+        sendCoordinates("check-in-form", "check-in-latitude", "check-in-longitude");
       });
     }
 
@@ -99,13 +98,11 @@
     if (checkOutBtn) {
       checkOutBtn.addEventListener("click", function () {
         const attendanceId = document.getElementById("check-out-id")?.value;
-        sendLocationAndSubmit("check-out-form", "check-out-location", attendanceId);
+        sendCoordinates("check-out-form", "check-out-latitude", "check-out-longitude", attendanceId);
       });
     }
   }
 
-  // Runs on full page load
   document.addEventListener("DOMContentLoaded", initializeLocationScript);
-  // Runs on Turbo visits (like after Devise login)
   document.addEventListener("turbo:load", initializeLocationScript);
 </script>
