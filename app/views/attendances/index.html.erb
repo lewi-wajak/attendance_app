@@ -58,12 +58,25 @@
 <!-- JavaScript to handle location + form submission -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Trigger location permission early
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          console.log("Location permission granted.");
+        },
+        function (error) {
+          console.warn("Location permission denied or not yet granted.");
+        }
+      );
+    }
+
+    // Reusable location + form submit function
     function sendLocationAndSubmit(formId, inputId, attendanceId = null) {
       const input = document.getElementById(inputId);
       if (!input) return alert("Hidden field missing!");
 
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
+        navigator.geolocation.getCurrentPosition(function (position) {
           const coords = `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`;
           input.value = coords;
 
@@ -73,7 +86,7 @@
           }
 
           document.getElementById(formId).submit();
-        }, function() {
+        }, function () {
           alert("Location access denied.");
         });
       } else {
@@ -81,6 +94,7 @@
       }
     }
 
+    // Check In button click
     const checkInBtn = document.getElementById("check-in-btn");
     if (checkInBtn) {
       checkInBtn.addEventListener("click", function () {
@@ -88,6 +102,7 @@
       });
     }
 
+    // Check Out button click
     const checkOutBtn = document.getElementById("check-out-btn");
     if (checkOutBtn) {
       checkOutBtn.addEventListener("click", function () {
