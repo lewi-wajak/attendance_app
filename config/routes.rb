@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  namespace :admin do
+    get "users/index"
+    get "dashboard/index"
+  end
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -6,10 +10,23 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  root 'attendances#index';
+
+  resources :attendances, only: [:index] do
+    collection do
+      post :check_in
+      patch :check_out
+    end
+  end
+
+ namespace :admin do
+  get 'dashboard', to: 'dashboard#index'
+  resources :users, only: [:index] do
+    member do
+      patch :update_role   # Add this line
+    end
+  end
+
+end
 end

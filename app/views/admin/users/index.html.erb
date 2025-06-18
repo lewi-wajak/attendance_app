@@ -1,0 +1,29 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= user.name %></td>
+        <td><%= user.email %></td>
+        <td><%= user.has_role?(:admin) ? "Admin" : "Employee" %></td>
+        <td>
+          <% if user != current_user %>
+            <%= form_with url: update_role_admin_user_path(user), method: :patch, local: true do %>
+              <%= hidden_field_tag :role_action, user.has_role?(:admin) ? "demote" : "promote" %>
+              <%= submit_tag user.has_role?(:admin) ? "Demote" : "Promote", class: "btn btn-sm #{user.has_role?(:admin) ? 'btn-danger' : 'btn-success'}" %>
+            <% end %>
+          <% else %>
+            <span class="text-muted">You</span>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

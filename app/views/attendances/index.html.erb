@@ -1,0 +1,99 @@
+<h2>Welcome, <%= current_user.name %>!</h2>
+
+<!-- Flash messages -->
+<% if notice %>
+  <p style="color: green;"><%= notice %></p>
+<% elsif alert %>
+  <p style="color: red;"><%= alert %></p>
+<% end %>
+
+<!-- Check-in / Check-out Buttons -->
+<div>
+  <% if @today_attendance.nil? %>
+    <button type="button" id="check-in-btn" class="btn btn-success">Check In</button>
+
+    <!-- Hidden Check-In Form -->
+    <%= form_with url: check_in_attendances_path, method: :post, id: "check-in-form", style: "display: none;" do %>
+      <%= hidden_field_tag :location, "", id: "check-in-location" %>
+    <% end %>
+
+  <% elsif @today_attendance.check_out.nil? %>
+    <button type="button" id="check-out-btn" class="btn btn-danger">Check Out</button>
+    <%= hidden_field_tag :attendance_id, @today_attendance.id, id: "check-out-id" %>
+
+    <!-- Hidden Check-Out Form -->
+    <%= form_with url: check_out_attendances_path, method: :patch, id: "check-out-form", style: "display: none;" do %>
+      <%= hidden_field_tag :location, "", id: "check-out-location" %>
+      <%= hidden_field_tag :id, "", id: "hidden-checkout-id" %>
+    <% end %>
+
+  <% else %>
+    <p class="text-muted">You have checked in and out for today.</p>
+  <% end %>
+</div>
+
+<!-- Attendance History Table -->
+<h3>Your Attendance Records</h3>
+<table border="1" class="table">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Check In</th>
+      <th>Check Out</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @attendances.each do |a| %>
+      <tr>
+        <td><%= a.created_at.strftime("%B %d, %Y") %></td>
+        <td><%= a.check_in&.strftime("%I:%M %p") %></td>
+        <td><%= a.check_out&.strftime("%I:%M %p") || "Not yet" %></td>
+        <td><%= a.location %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<!-- JavaScript to handle location + form submission -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    function sendLocationAndSubmit(formId, inputId, attendanceId = null) {
+      const input = document.getElementById(inputId);
+      if (!input) return alert("Hidden field missing!");
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          const coords = `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`;
+          input.value = coords;
+
+          if (attendanceId) {
+            const idField = document.getElementById("hidden-checkout-id");
+            if (idField) idField.value = attendanceId;
+          }
+
+          document.getElementById(formId).submit();
+        }, function() {
+          alert("Location access denied.");
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    const checkInBtn = document.getElementById("check-in-btn");
+    if (checkInBtn) {
+      checkInBtn.addEventListener("click", function () {
+        sendLocationAndSubmit("check-in-form", "check-in-location");
+      });
+    }
+
+    const checkOutBtn = document.getElementById("check-out-btn");
+    if (checkOutBtn) {
+      checkOutBtn.addEventListener("click", function () {
+        const attendanceId = document.getElementById("check-out-id")?.value;
+        sendLocationAndSubmit("check-out-form", "check-out-location", attendanceId);
+      });
+    }
+  });
+</script>

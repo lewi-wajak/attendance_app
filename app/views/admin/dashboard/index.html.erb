@@ -1,0 +1,24 @@
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Employee Name</th>
+      <th>Email</th>
+      <th>Date</th>
+      <th>Check In</th>
+      <th>Check Out</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @attendances.each do |a| %>
+      <tr>
+        <td><%= a.user.name %></td>  <!-- Make sure user has name -->
+        <td><%= a.user.email %></td>
+        <td><%= a.created_at.strftime("%B %d, %Y") %></td>
+        <td><%= a.check_in&.strftime("%I:%M %p") %></td>
+        <td><%= a.check_out&.strftime("%I:%M %p") || "Not yet" %></td>
+        <td><%= a.location %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
